@@ -41,46 +41,4 @@ class Main extends PluginBase{
         $this->skins = json_decode(file_get_contents($this->getDataFolder().'skins.json'), true);
     }
 
-    public function decodePacket($packet){
-			$packet->encode();
-			var_dump("[Client -> Server 0x" . dechex($packet->pid()) . "] " . (new \ReflectionClass($packet))->getShortName() . " (length " . strlen($packet->buffer) . ")");
-			var_dump($this->getFields($packet));
-    }
-    
-    public function getFields($packet) : string{
-		$output = "";
-		foreach($packet as $key => $value){
-			if($key === "buffer"){
-				continue;
-			}
-			$output .= " $key: " . self::safePrint($value) . PHP_EOL;
-		}
-		return rtrim($output);
-    }
-
-    
-    private static function safePrint($value, int $spaces = 2) : string{
-		if(is_object($value)){
-			if((new \ReflectionClass($value))->hasMethod("__toString")){
-				$value = $value->__toString();
-			}else{
-				$value = get_class($value);
-			}
-		}elseif(is_string($value)){
-			if($value === ""){
-				$value = "(empty)";
-			}elseif(preg_match('#([^\x20-\x7E])#', $value) > 0){
-				$value = "0x" . bin2hex($value);
-			}
-		}elseif(is_array($value)){
-			$d = "Array:";
-			foreach($value as $key => $v){
-				$d .= PHP_EOL . str_repeat(" ", $spaces) . "$key: " . self::safePrint($v, $spaces + 1);
-			}
-			$value = $d;
-		}else{
-			$value = trim(str_replace("\n", "\n ", print_r($value, true)));
-		}
-		return $value;
-	}
 }
